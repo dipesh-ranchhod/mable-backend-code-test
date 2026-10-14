@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+
+require "mable_transfers"
+
+if ARGV.length != 2
+  warn "Usage: bundle exec ruby bin/process_transfers ACCOUNT_BALANCES.csv TRANSFERS.csv"
+  exit 1
+end
+
+begin
+  accounts = MableTransfers::CsvLoader.accounts(ARGV[0])
+  transfers = MableTransfers::CsvLoader.transfers(ARGV[1])
+  ledger = MableTransfers::Ledger.new(accounts)
+  reporter = MableTransfers::Reporter.new
+
+  transfers.each_with_index do |transfer, index|
+    reporter.transfer(ledger.apply(transfer), number: index + 1)
+  end
+
+  reporter.balances(ledger.accounts)
+rescue MableTransfers::Error => e
+  warn "Error: #{e.message}"
+  exit 1
+end
+
