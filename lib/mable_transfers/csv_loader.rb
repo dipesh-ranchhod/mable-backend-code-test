@@ -22,7 +22,7 @@ module MableTransfers
       private
 
       def load_rows(path, expected_columns:)
-        CSV.foreach(path).with_index(1).map do |row, row_number|
+        CSV.foreach(path, skip_blanks: true).with_index(1).map do |row, row_number|
           validate_column_count!(row, expected_columns)
           yield row
         rescue MableTransfers::Error => e
